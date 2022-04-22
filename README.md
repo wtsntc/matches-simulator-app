@@ -8,3 +8,5 @@ App Android Nativo de Simulação de Partidas. Este repositório foi organizado 
       -  [release/componentes-layouts-ui-ux-em-apps-android](https://github.com/wtsntc/matches-simulator-app/tree/release/componentes-layouts-ui-ux-em-apps-android)
 1. Java e Kotlin juntos!? Construindo apps Android
       -  [release/java-e-kotlin-juntos-construindo-apps-android](https://github.com/wtsntc/matches-simulator-app/tree/release/java-e-kotlin-juntos-construindo-apps-android)
+1. Explorando o Firebase para apps android resilientes
+      -  [release/explorando-o-firebase-para-apps-android-resilientes](https://github.com/wtsntc/matches-simulator-app/tree/release/explorando-o-firebase-para-apps-android-resilientes)
