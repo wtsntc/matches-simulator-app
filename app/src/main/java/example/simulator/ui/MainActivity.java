@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import example.simulator.R;
@@ -29,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private MatchesApi matchesApi;
-    private MatchesAdapter matchesAdapter;
+    private MatchesAdapter matchesAdapter = new MatchesAdapter(Collections.emptyList());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +43,11 @@ public class MainActivity extends AppCompatActivity {
         setupHttpClient();
         setupMatchesList();
         setupMatchesRefresh();
-        setupFloatActionButton();
+        setupFloatingActionButton();
     }
+
+
+
 
     private void setupHttpClient() {
         Retrofit retrofit = new Retrofit.Builder()
@@ -53,31 +58,30 @@ public class MainActivity extends AppCompatActivity {
         matchesApi = retrofit.create(MatchesApi.class);
     }
 
-    private void setupFloatActionButton() {
-        binding.fabSimulate.setOnClickListener(view -> {
-            view.animate().rotationBy(360).setDuration(500).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    for (int i = 0; i < matchesAdapter.getItemCount(); i++) {
-                        Match match = matchesAdapter.getMatches().get(i);
-                        Random random = new Random();
-                        match.getHomeTeam().setScore(random.nextInt(match.getHomeTeam().getStars() + 1));
-                        match.getAwayTeam().setScore(random.nextInt(match.getAwayTeam().getStars() + 1));
-                        matchesAdapter.notifyItemChanged(i);
-                    }
-                }
-            }).start();
-        });
-    }
-
     private void setupMatchesList() {
         binding.rvMatches.setHasFixedSize(true);
         binding.rvMatches.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvMatches.setAdapter(matchesAdapter);
         findMatchesFromApi();
     }
 
     private void setupMatchesRefresh() {
         binding.slrMatches.setOnRefreshListener(this::findMatchesFromApi);
+    }
+
+    private void setupFloatingActionButton() {
+        binding.fabSimulate.setOnClickListener(view -> view.animate().rotationBy(360).setDuration(500).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                for (int i = 0; i < matchesAdapter.getItemCount(); i++) {
+                    Match match = matchesAdapter.getMatches().get(i);
+                    Random random = new Random();
+                    Objects.requireNonNull(match.getHomeTeam()).setScore(random.nextInt(match.getHomeTeam().getStars() + 1));
+                    Objects.requireNonNull(match.getAwayTeam()).setScore(random.nextInt(match.getAwayTeam().getStars() + 1));
+                    matchesAdapter.notifyItemChanged(i);
+                }
+            }
+        }));
     }
 
     private void findMatchesFromApi() {
@@ -86,7 +90,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<List<Match>> call, @NonNull Response<List<Match>> response) {
                 if (response.isSuccessful()) {
-                    matchesAdapter = new MatchesAdapter(response.body());
+                    List<Match> matches = response.body();
+                    matchesAdapter = new MatchesAdapter(matches);
                     binding.rvMatches.setAdapter(matchesAdapter);
                 } else {
                     showErrorMessage();
@@ -99,11 +104,10 @@ public class MainActivity extends AppCompatActivity {
                 showErrorMessage();
                 binding.slrMatches.setRefreshing(false);
             }
-
         });
     }
 
     private void showErrorMessage() {
-        Snackbar.make(binding.rvMatches, R.string.error_api, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(binding.fabSimulate, R.string.error_api, Snackbar.LENGTH_LONG).show();
     }
 }
